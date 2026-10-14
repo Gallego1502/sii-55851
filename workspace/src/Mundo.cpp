@@ -192,4 +192,9 @@ void CMundo::Init()
 	jugador2.g=0;
 	jugador2.x1=6;jugador2.y1=-1;
 	jugador2.x2=6;jugador2.y2=1;
+	
+	//velocidad esfera
+	esfera.velocidad.x=3.0f;
+	esfera.velocidad.y=3.0f;
 }
+
