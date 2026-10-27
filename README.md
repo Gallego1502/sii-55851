@@ -42,3 +42,10 @@ Asignatura impartida por el **Departamento de Ingeniería Eléctrica, Electróni
 Este repositorio tiene finalidad exclusivamente docente.
 
 Si detectas algún error o tienes alguna sugerencia de mejora, puedes comunicarlo al profesorado de la asignatura.
+Practica 1 SII:Juego de tenis interactivo
+
+## practicas
+practica1: implementacion del movimiento de la pelota y las raquetas
+
+practica2: implementacion de logger y comunicacion FIFO en tenis
+
