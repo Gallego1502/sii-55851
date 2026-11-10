@@ -45,7 +45,7 @@ void OnDraw(void)
 void OnTimer(int value)
 {
 	mundo.OnTimer(value);
-	glutTimerFunc(25,OnTimer,0);
+	glutTimerFunc(10,OnTimer,0);
 	glutPostRedisplay();
 }
 void OnKeyboardDown(unsigned char key, int x, int y)

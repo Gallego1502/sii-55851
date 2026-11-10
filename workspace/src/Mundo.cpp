@@ -11,6 +11,7 @@
 #include <math.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <sys/mman.h>
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -118,6 +119,21 @@ void CMundo::OnDraw()
 
 void CMundo::OnTimer(int value)
 {	
+	// --- COMUNICACIÓN CON EL BOT (Memoria Compartida) ---
+	if (mem_compartida != NULL) {
+		// 1. Actualizar los campos del atributo DatosMemCompartida
+		mem_compartida->esfera = esfera;
+		mem_compartida->raqueta1 = jugador1;
+
+		// 2. Invocar OnKeyboardDown según la acción dictada por el bot
+		if (mem_compartida->accion == 1) {
+			OnKeyboardDown('w', 0, 0); // 'w' mueve la raqueta hacia arriba
+		} else if (mem_compartida->accion == -1) {
+			OnKeyboardDown('s', 0, 0); // 's' mueve la raqueta hacia abajo
+		} else if (mem_compartida->accion == 0) {
+			jugador1.velocidad.y = 0;  // Si es 0 (nada), detenemos la raqueta
+		}
+	}
 	jugador1.Mueve(0.025f);
 	jugador2.Mueve(0.025f);
 	esfera.Mueve(0.025f);
@@ -166,16 +182,25 @@ void CMundo::OnKeyboardDown(unsigned char key, int x, int y)
 	{
 //	case 'a':jugador1.velocidad.x=-1;break;
 //	case 'd':jugador1.velocidad.x=1;break;
-	case 's':jugador1.velocidad.y=-4;break;
-	case 'w':jugador1.velocidad.y=4;break;
-	case 'l':jugador2.velocidad.y=-4;break;
-	case 'o':jugador2.velocidad.y=4;break;
+	case 's':jugador1.velocidad.y=-6;break;
+	case 'w':jugador1.velocidad.y=6;break;
+	case 'l':jugador2.velocidad.y=-6;break;
+	case 'o':jugador2.velocidad.y=6;break;
 
 	}
 }
 
 void CMundo::Init()
 {
+        // i. Crear fichero del tamaño de DatosMemCompartida (open y ftruncate)
+int fd_mem = open("/tmp/datos_bot", O_RDWR | O_CREAT | O_TRUNC, 0666);
+ftruncate(fd_mem, sizeof(DatosMemCompartida));
+
+// ii. Proyectar el fichero en memoria (mmap) e iv. Asignarlo al puntero
+mem_compartida = (DatosMemCompartida *)mmap(NULL, sizeof(DatosMemCompartida), PROT_READ | PROT_WRITE, MAP_SHARED, fd_mem, 0);
+
+// iii. Cerrar el descriptor de fichero (ya no hace falta tras el mmap)
+close(fd_mem);
         //abrir tuberia
         fd_fifo=open("/tmp/fifo_tenis",O_WRONLY);
         
