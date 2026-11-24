@@ -49,3 +49,6 @@ practica1: implementacion del movimiento de la pelota y las raquetas
 
 practica2: implementacion de logger y comunicacion FIFO en tenis
 
+pracrica3:implementacion del bot que controla raqueta 1 de froma automatica comunicandose mediante memoria compartida
+
+practica4: se ha separado el juego en servidor y cliente comunicados por dos tuberías FIFO con un hilo concurrente (pthread), manteniendo el logger en el servidor y el bot en el cliente

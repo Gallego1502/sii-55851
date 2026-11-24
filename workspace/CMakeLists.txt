@@ -11,7 +11,12 @@ SET(COMMON_SRCS
     src/Vector2D.cpp
 )
 
-ADD_EXECUTABLE(tenis src/tenis.cpp ${COMMON_SRCS})
-ADD_EXECUTABLE(logger src/logger.cpp)
 
-TARGET_LINK_LIBRARIES(tenis glut GL GLU)
+add_executable(servidor src/servidor.cpp src/MundoServidor.cpp src/Esfera.cpp src/Raqueta.cpp src/Plano.cpp src/Vector2D.cpp)
+target_link_libraries(servidor glut GLU GL pthread)
+
+add_executable(cliente src/cliente.cpp src/MundoCliente.cpp src/Esfera.cpp src/Raqueta.cpp src/Plano.cpp src/Vector2D.cpp)
+target_link_libraries(cliente glut GLU GL)
+ADD_EXECUTABLE(logger src/logger.cpp)
+ADD_EXECUTABLE(bot src/bot.cpp)
+

@@ -15,6 +15,7 @@
 #include "Esfera.h"
 #include "Raqueta.h"
 
+
 class CMundo  
 {
 public:
@@ -37,6 +38,10 @@ public:
 	int puntos1;
 	int puntos2;
 	int fd_fifo;
+	int fd_coords;
+int fd_teclas;
+pthread_t thid1;
+void RecibeComandosJugador();
 };
 
 #endif // !defined(AFX_MUNDO_H__9510340A_3D75_485F_93DC_302A43B8039A__INCLUDED_)

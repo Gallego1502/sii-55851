@@ -2,7 +2,7 @@
 //
 //////////////////////////////////////////////////////////////////////
 #include <fstream>
-#include "Mundo.h"
+#include "MundoCliente.h"
 #include "glut.h"
 
 #include <stdlib.h>
@@ -12,6 +12,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -23,9 +25,9 @@ CMundo::CMundo()
 
 CMundo::~CMundo()
 {
-        if(fd_fifo !=-1){
-          close(fd_fifo);
-          }
+close(fd_coords);
+close(fd_teclas);
+unlink("/tmp/fifo_teclas");
 }
 
 void CMundo::InitGL()
@@ -119,6 +121,14 @@ void CMundo::OnDraw()
 
 void CMundo::OnTimer(int value)
 {	
+	char cad[200];
+if (fd_coords != -1 && read(fd_coords, cad, sizeof(cad)) > 0) {
+    sscanf(cad, "%f %f %f %f %f %f %f %f %f %f %d %d",
+           &esfera.centro.x, &esfera.centro.y,
+           &jugador1.x1, &jugador1.y1, &jugador1.x2, &jugador1.y2,
+           &jugador2.x1, &jugador2.y1, &jugador2.x2, &jugador2.y2,
+           &puntos1, &puntos2);
+}
 	// --- COMUNICACIÓN CON EL BOT (Memoria Compartida) ---
 	if (mem_compartida != NULL) {
 		// 1. Actualizar los campos del atributo DatosMemCompartida
@@ -131,67 +141,27 @@ void CMundo::OnTimer(int value)
 		} else if (mem_compartida->accion == -1) {
 			OnKeyboardDown('s', 0, 0); // 's' mueve la raqueta hacia abajo
 		} else if (mem_compartida->accion == 0) {
-			jugador1.velocidad.y = 0;  // Si es 0 (nada), detenemos la raqueta
-		}
-	}
-	jugador1.Mueve(0.025f);
-	jugador2.Mueve(0.025f);
-	esfera.Mueve(0.025f);
-	int i;
-	for(i=0;i<paredes.size();i++)
-	{
-		paredes[i].Rebota(esfera);
-		paredes[i].Rebota(jugador1);
-		paredes[i].Rebota(jugador2);
-	}
-
-	jugador1.Rebota(esfera);
-	jugador2.Rebota(esfera);
-	if(fondo_izq.Rebota(esfera))
-	{
-		esfera.centro.x=0;
-		esfera.centro.y=rand()/(float)RAND_MAX;
-		esfera.velocidad.x=2+2*rand()/(float)RAND_MAX;
-		esfera.velocidad.y=2+2*rand()/(float)RAND_MAX;
-		puntos2++;
-	}
-	
-	char mensaje[256];
-	int longitud=sprintf(mensaje, "Jugador 2 marca 1 punto,lleva un total de %d puntos. \n",puntos2);
-	if(fd_fifo !=-1) write(fd_fifo,mensaje,longitud);
-	
-
-	if(fondo_dcho.Rebota(esfera))
-	{
-		esfera.centro.x=0;
-		esfera.centro.y=rand()/(float)RAND_MAX;
-		esfera.velocidad.x=-2-2*rand()/(float)RAND_MAX;
-		esfera.velocidad.y=-2-2*rand()/(float)RAND_MAX;
-		puntos1++;
-	}
-	//terminar juego
-	if(puntos1>=3 || puntos2>=3){
-	 exit(0);
+    OnKeyboardDown('x', 0, 0);
+}
 	}
 
 }
 
 void CMundo::OnKeyboardDown(unsigned char key, int x, int y)
 {
-	switch(key)
-	{
-//	case 'a':jugador1.velocidad.x=-1;break;
-//	case 'd':jugador1.velocidad.x=1;break;
-	case 's':jugador1.velocidad.y=-6;break;
-	case 'w':jugador1.velocidad.y=6;break;
-	case 'l':jugador2.velocidad.y=-6;break;
-	case 'o':jugador2.velocidad.y=6;break;
-
-	}
+char cad[100];
+sprintf(cad, "%c", key);
+if (fd_teclas != -1) {
+    write(fd_teclas, cad, sizeof(cad));
+}
 }
 
 void CMundo::Init()
 {
+        
+        fd_coords = open("/tmp/fifo_coords", O_RDONLY);
+        mkfifo("/tmp/fifo_teclas", 0666);
+fd_teclas = open("/tmp/fifo_teclas", O_WRONLY);
         // i. Crear fichero del tamaño de DatosMemCompartida (open y ftruncate)
 int fd_mem = open("/tmp/datos_bot", O_RDWR | O_CREAT | O_TRUNC, 0666);
 ftruncate(fd_mem, sizeof(DatosMemCompartida));
@@ -202,7 +172,7 @@ mem_compartida = (DatosMemCompartida *)mmap(NULL, sizeof(DatosMemCompartida), PR
 // iii. Cerrar el descriptor de fichero (ya no hace falta tras el mmap)
 close(fd_mem);
         //abrir tuberia
-        fd_fifo=open("/tmp/fifo_tenis",O_WRONLY);
+
         
 	Plano p;
 //pared inferior
